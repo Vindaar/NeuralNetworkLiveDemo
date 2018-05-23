@@ -1,0 +1,34 @@
+* MNIST classification live demo
+
+This repository contains (will contain) a simple demo showcasing
+training of a simple MLP on the MNIST (insert link) dataset.
+
+This demo is part of a talk given at the BCGS weekend seminar in Bad
+Honnef on <2018-05-26 Sa> (insert link).
+
+The basic idea is the following:
+- train MLP using arraymancer (insert link)
+- after each epoch (or more or less often?) take (some?) random digit,
+  classifiy
+- use plotly to plot sample as heatmap on the fly, including
+  prediction of network of that sample
+
+** Breakdown of repo / project
+- ann_talk.org
+  is the (probably rushed?! :/) talk I will be giving
+
+The demo consists of 2 different programs, a client and a server. The
+server performs the actual training using Arraymancer. The client is
+only used to plot the data. It uses nim-plotly (based on plotly.js)
+for that.
+
+*** Client
+Since nim-plotly by default uses the =C= backend by default, some work
+had to be done to be able to produce live updating plots. Using a
+static template.html does not easily allow to call =Plotly.react= to
+replace the content of the plot. Therefore, we use an experimental JS
+backend for nim-plotly and call =newPlot= as well as =react= from
+that. But because we cannot train the MLP using the JS backend, we
+need to split the two into individual programs.
+The communication between the two happens using WebSockets, with the
+data being sent as stringified JSON.
