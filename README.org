@@ -32,3 +32,6 @@ that. But because we cannot train the MLP using the JS backend, we
 need to split the two into individual programs.
 The communication between the two happens using WebSockets, with the
 data being sent as stringified JSON.
+
+Note that this depends on the =nim-plotly/exp_js_backend= branch here:
+[[https://github.com/vindaar/nim-plotly/tree/exp_js_backend]].
