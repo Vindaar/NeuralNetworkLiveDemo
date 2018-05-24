@@ -6,10 +6,14 @@ import chroma
 import arraymancer
 import algorithm
 import json
+import random
+
+# import from this project
+import protocol
 
 let server = newAsyncHttpServer()
 
-template preparePlotly() {.dirty.} =
+template prepareMnist() {.dirty.} =
   ## dirty template to keep `cb` cleaner
   # first prepare data
   let
@@ -18,22 +22,14 @@ template preparePlotly() {.dirty.} =
 
   const title = "MNIST example: label "
 
-  let
-    d = Trace[float](mode: PlotMode.LinesMarkers, `type`: PlotType.HeatMap)
-  d.colormap = ColorMap.Viridis
-  # initialize data with first event
-  d.zs = x_train[0,_,_].clone.squeeze.data.reshape2D([28, 28]).reversed
-
-  let
-    layout = Layout(title: &"{title} 0", width: 800, height: 800,
-                    xaxis: Axis(title: "my x-axis"),
-                    yaxis: Axis(title: "y-axis too"), autosize: false)
-    p = Plot[float](layout: layout, datas: @[d])
-
 proc cb(req: Request) {.async.} =
+  ## callback function of the WebSocket server, which contains the event loop in
+  ## which we (will) train the MLP and send the data to the plotly client
 
-  # call dirty template, which creates all Plotly and MNIST related variables
-  preparePlotly()
+  # call dirty template, which creates all MNIST related variables
+  prepareMnist()
+  # get the plotly `Plot` objects
+  let (p_mnist, p_pred, p_error) = preparePlotly()
 
   let (ws, error) = await verifyWebsocketRequest(req)#, "myfancyprotocol")
 
@@ -53,26 +49,18 @@ proc cb(req: Request) {.async.} =
       case opcode
       of Opcode.Text:
         echo data
-        #waitFor ws.sendText("thanks for the data!")
-
         let
           im = x_train[ind,_,_].clone.squeeze
           # return  this
           im2d = im.data.reshape2D([28, 28]).reversed
-        # assign to the data field
-        d.zs = im2d
         # replace the data on the `Plot`
-        p.datas = @[d]
-        var jsonTab = initOrderedTable[string, cstring](2)
-        let
-          # call `json` for each element of `Plot.datas`
-          jsons = p.datas[0].json(as_pretty = false)
-        jsonTab["trace"] = jsons
-        # modify layout
-        layout.title = title & $y_train[ind]
-        jsonTab["layout"] = pretty(% layout)
-        #let dataSend = JsonNode(kind: JObject, fields: jsonTab)
-        waitFor ws.sendText($jsonTab)
+        p_mnist.datas[0].zs = im2d
+        # modify title and set new layout
+        p_mnist.layout.title = title & $y_train[ind]
+        # create the data packet according to protocol and send
+        let dataPack = createDataPacket(p_mnist, p_pred, 1.1)
+        echo "Send packet ", dataPack
+        waitFor ws.sendText(dataPack)
       of Opcode.Binary:
         waitFor ws.sendBinary(data)
       of Opcode.Close:
@@ -84,11 +72,8 @@ proc cb(req: Request) {.async.} =
       echo "encountered exception: ", getCurrentExceptionMsg()
 
 proc main() =
-  # simple example showcasing scatter plot with error bars
-
-  #discard d.createSeqForHeatmap
+  # create and run the websocket server
   waitFor server.serve(Port(8080), cb)
-
 
 when isMainModule:
   main()
