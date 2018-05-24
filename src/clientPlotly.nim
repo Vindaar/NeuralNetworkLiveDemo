@@ -13,16 +13,24 @@ import protocol
 var
   socket = newWebSocket("ws://localhost:8080")
 
-proc parseNewData(data: cstring): (JsObject, JsObject) =
+proc parseNewData(data: cstring): (JsObject, JsObject, JsObject, JsObject, float, float) =
   ## given a `DataPacket` received via the socket, parse it to
   ## a `DataPacket` instance and extract the needed information from it
   ## and convert it to two `JsObject`
   let dataPack = parseDataPacket(data)
   let
-    trace = dataPack.mnTrace
-    layoutN = dataPack.mnLayout
-  result[0] = parseJsonToJs("[" & trace & "]")
-  result[1] = parseJsonToJs(layoutN)
+    mnTrace = dataPack.mnTrace
+    mnLayout = dataPack.mnLayout
+    prTrace = dataPack.prTrace
+    prLayout = dataPack.prLayout
+    erValX = dataPack.erValX
+    erValY = dataPack.erValY
+  result[0] = parseJsonToJs("[" & mnTrace & "]")
+  result[1] = parseJsonToJs(mnLayout)
+  result[2] = parseJsonToJs("[" & prTrace & "]")
+  result[3] = parseJsonToJs(prLayout)
+  result[4] = parseFloat(erValX)
+  result[5] = parseFloat(erValY)
 
 func jsObjectifyPlot(p: Plot): (JsObject, JsObject) =
   ## given a `Plot` object convert it to two valid `JsObject` to
@@ -43,6 +51,8 @@ proc animateClient() =
   let
     plots = [p_mnist, p_pred, p_error]
     names = ["MNIST", "prediction", "error_rate"]
+    # get data for p_error separately
+    (pData, pLayout) = jsObjectifyPlot(p_error)
   # NOTE: unfortunately we cannot use loopfusion here, due to
   # https://github.com/nim-lang/Nim/issues/7794
   for tup in zip(plots, names):
@@ -54,13 +64,19 @@ proc animateClient() =
   proc doAgain() =
     socket.send("ping")
     socket.onMessage = proc (e: MessageEvent) =
-      echo("received: ", e.data)
+      #echo("received: ", e.data)
       # parse the data packet to get new data and layout
-      let (newData, newLayout) = parseNewData(e.data)
+      let (mnData, mnLayout, prData, prLayout, erValX, erValY) = parseNewData(e.data)
       # replace data with new data
-      Plotly.react("MNIST", newData, newLayout)
+      Plotly.react("MNIST", mnData, mnLayout)
+      Plotly.react("prediction", prData, prLayout)
+      # update p_error
+      p_error.datas[0].xs.add erValX
+      p_error.datas[0].ys.add erValY
+      let (errData, errLayout) = jsObjectifyPlot(p_error)
+      Plotly.react("error_rate", errData, errLayout)
 
-  discard window.setInterval(doAgain, 1000)
+  discard window.setInterval(doAgain, 10)
 
 proc main() =
   ## main proc of the client (animated plotting using plotly.js). Open a WebSocket,
