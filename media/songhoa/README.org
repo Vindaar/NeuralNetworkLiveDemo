@@ -1,0 +1,3 @@
+* Note about these images
+The images in this folder were all taken from
+[[http://www.songho.ca/dsp/convolution/convolution2d_example.html]]
