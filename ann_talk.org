@@ -1,0 +1,143 @@
+#+startup: beamer
+#+LATEX_CLASS: beamer
+
+# set to 16:9
+# #+LaTeX_CLASS_options: [aspectratio=169]
+
+# disable the navigation bar
+#+LaTeX_HEADER:\beamertemplatenavigationsymbolsempty
+
+# enable page numbers in footer
+# define the page numbers without total numbers
+#+LATEX_HEADER:\setbeamertemplate{footline}{%
+#+LATEX_HEADER:  \hfill%
+#+LATEX_HEADER:  \usebeamercolor[fg]{page number in head/foot}%
+#+LATEX_HEADER:  \usebeamerfont{page number in head/foot}%
+#+LATEX_HEADER:  \insertframenumber%
+#+LATEX_HEADER:  %\,/\,\inserttotalframenumber
+#+LATEX_HEADER:  \kern1em\vskip2pt%
+#+LATEX_HEADER:}
+
+# define additional packages
+#+LATEX_HEADER: \usepackage{siunitx}
+#+LATEX_HEADER: \usepackage{mhchem}
+#+LATEX_HEADER: \usepackage{booktabs}
+#+LaTeX_HEADER: \usepackage{pdfpages}
+#+LATEX_HEADER: \usetheme{Singapore}
+#+LATEX_HEADER: \usecolortheme{rose}
+#+LATEX_HEADER: \usefonttheme{professionalfonts}
+#+LATEX_HEADER: \useinnertheme{rounded}
+
+# set org beamer export options
+# headline of depth 2 == frame (H:2)
+# no table of contents (toc:nil)
+#+OPTIONS: ^:nil H:2 toc:nil
+
+#+BEAMER_HEADER: \titlegraphic{%
+#+BEAMER_HEADER: \includegraphics[height=.15\textheight]{../../../Documents/Talks/logos/PI_logo_blue}
+#+BEAMER_HEADER: \hfill
+#+BEAMER_HEADER: \includegraphics[height=.15\textheight]{../../../Documents/Talks/logos/CAST}
+#+BEAMER_HEADER: \hfill
+#+BEAMER_HEADER: \includegraphics[height=.15\textheight]{../../../Documents/Talks/logos/unibonn-logo}}
+
+# ##############################
+# Define the monokai colors
+# ##############################
+
+#+LATEX_HEADER: \definecolor{monokai_bg}{RGB}{39, 40, 34}
+#+LATEX_HEADER: \definecolor{monokai_fg}{RGB}{241, 235, 235}
+#+LATEX_HEADER: \definecolor{monokai_0}{RGB}{72,72,62}
+#+LATEX_HEADER: \definecolor{monokai_1}{RGB}{220,37,102}
+#+LATEX_HEADER: \definecolor{monokai_3}{RGB}{212,201,110}
+#+LATEX_HEADER: \definecolor{monokai_4}{RGB}{85,188,206}
+# something is wrong with this 5
+# however, looks better on slides
+#+LATEX_HEADER: \definecolor{monokai_5}{RGB}{80,40,151}
+# this is the original, but it's too bright
+# #+LATEX_HEADER: \definecolor{monokai_5}{RGB}{147, 88, 254}
+#+LATEX_HEADER: \definecolor{monokai_7}{RGB}{172,173,161}
+#+LATEX_HEADER: \definecolor{monokai_8}{RGB}{118,113,94}
+#+LATEX_HEADER: \definecolor{monokai_9}{RGB}{250,39,114}
+#+LATEX_HEADER: \definecolor{monokai_11}{RGB}{231, 219, 117}
+#+LATEX_HEADER: \definecolor{monokai_15}{RGB}{207,208,194}
+#+LATEX_HEADER: \definecolor{monokai_orange}{RGB}{253, 151, 31}
+#+LATEX_HEADER: \definecolor{monokai_term_5}{RGB}{175,135,255}
+
+# ##############################
+# Change the style of bullet points and enumerations to flat circles
+# ##############################
+
+# change singapore style of items from ball to circle
+#  #+LATEX_HEADER: \setbeamertemplate{itemize items}[circle]
+#  #+LATEX_HEADER: \setbeamertemplate{enumerate items}[circle]
+# in one line:
+#+LATEX_HEADER: \setbeamertemplate{items}[circle]
+
+
+# ##############################
+# Apply different colors to the theme
+# ##############################
+
+# structure is the default theme color
+#+LATEX_HEADER: \setbeamercolor{structure}{fg=monokai_0}
+#+LATEX_HEADER: \setbeamercolor{title}{fg=monokai_5}
+#+LATEX_HEADER: \setbeamercolor{frametitle}{fg=monokai_5}
+# text of the block title
+#+LATEX_HEADER: \setbeamercolor{block title}{fg=monokai_5}
+# background of block title
+# #+LATEX_HEADER: \setbeamercolor{block title}{bg=monokai_7}
+# text in a block
+#+LATEX_HEADER: \setbeamercolor{block body}{fg=monokai_bg}
+#+LATEX_HEADER: \setbeamercolor{itemize item}{fg=monokai_orange}
+# enumeration points (thanks to rounded theme under item projected)
+#+LATEX_HEADER: \setbeamercolor{item projected}{bg=monokai_orange}
+#+LATEX_HEADER: \setbeamercolor{item projected}{fg=monokai_0}
+#+LATEX_HEADER: \setbeamercolor{normal text}{fg=monokai_bg}
+#+LATEX_HEADER: \setbeamercolor{alerted text}{fg=monokai_1}
+
+#+LATEX_HEADER: \newcommand{\beamerbullet}{\textcolor{monokai_orange}{\textbullet}}
+
+# title and subtitle
+#+TITLE: Neural networks and their application at CAST
+#+AUTHOR: Sebastian Schmidt
+#+DATE: 26$^{\text{th}}$ May 2018
+
+# #+LATEX_HEADER: \subtitle{Status of the InGrid}}
+#+LATEX_HEADER: \institute{University of Bonn}
+
+
+
+* Neural networks - ...buzzword...
+
+
+* Neural networks at the CAST experiment
+** Potential improvements via CNNs
+
+*** baseline vs. CNNs: *$5\times$* background reduction (2014/15 data)
+
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1\textwidth
+[[~/Documents/Talks/figs/background_rates_L_CNN_logy.pdf]]
+#+END_CENTER
+
+
+** CNN implementation details
+
+- input size: $\num{256}\times\num{256}$ neurons
+- 3 convolutional and pooling layers alternating w/ 30, 70, 100
+  kernels using $\num{15} \times \num{15}$ filters
+- pooling layers perform $\num{2}\times\num{2}$ max pooling
+- $\tanh$ activation function
+- 1 fully connected feed-forward layer: (1800, 30) neurons
+- logistic regression layer: \num{2} output neurons
+- training w/ \num{12000} events per type on Nvidia GTX 1080
+- training time: $\sim
+  \SIrange[range-phrase={\text{~to~}}]{1}{10}{\hour}$
+
+** CNN example output distribution
+
+*** CNN output
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1\textwidth
+[[~/Documents/Talks/figs/CNN_classification_1_5.pdf]]
+#+END_CENTER
