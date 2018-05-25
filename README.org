@@ -1,5 +1,7 @@
 * MNIST classification live demo
 
+[[file:media/demo.gif]]
+
 This repository contains (will contain) a simple demo showcasing
 training of a simple MLP on the MNIST (insert link) dataset.
 
