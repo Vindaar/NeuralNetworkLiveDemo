@@ -12,6 +12,9 @@ import protocol
 var
   socket = newWebSocket("ws://localhost:8080")
 
+# global `Plotly` object
+let plt = newPlotly()
+
 proc parseNewData(data: cstring): (JsObject, JsObject, JsObject, JsObject, float, float) =
   ## given a `DataPacket` received via the socket, parse it to
   ## a `DataPacket` instance and extract the needed information from it
@@ -48,10 +51,10 @@ proc initPlotly() =
   const data = staticRead("resources/init_data.txt")
   let (mnData, mnLayout, prData, prLayout, erValX, erValY) = parseNewData(data)
 
-  Plotly.newPlot("MNIST", mnData, mnLayout)
-  Plotly.newPlot("prediction", prData, prLayout)
+  plt.newPlot("MNIST", mnData, mnLayout)
+  plt.newPlot("prediction", prData, prLayout)
   let (erData, erLayout) = jsObjectifyPlot(p_error)
-  Plotly.newPlot("error_rate", erData, erLayout)
+  plt.newPlot("error_rate", erData, erLayout)
 
 
 proc animateClient() {.exportc.} =
@@ -73,15 +76,15 @@ proc animateClient() {.exportc.} =
       # parse the data packet to get new data and layout
       let (mnData, mnLayout, prData, prLayout, erValX, erValY) = parseNewData(e.data)
       # replace data with new data
-      Plotly.react("MNIST", mnData, mnLayout)
-      Plotly.react("prediction", prData, prLayout)
+      plt.react("MNIST", mnData, mnLayout)
+      plt.react("prediction", prData, prLayout)
       # update p_error
       p_error.datas[0].xs.add erValX
       p_error.datas[0].ys.add erValY
       let (errData, errLayout) = jsObjectifyPlot(p_error)
-      Plotly.react("error_rate", errData, errLayout)
+      plt.react("error_rate", errData, errLayout)
 
-  discard window.setInterval(doAgain, 10)
+  discard window.setInterval(doAgain, 400)
 
 proc main() =
   ## main proc of the client (animated plotting using plotly.js). Open a WebSocket,
