@@ -40,7 +40,7 @@ template prepareMnist() {.dirty.} =
   # first prepare data
   let
     ctx = newContext Tensor[float32] # Autograd/neural network graph
-    n = 64                           # Batch size
+    n = 16                           # Batch size
 
   let
     # Training data is 60k 28x28 greyscale images from 0-255,
@@ -120,7 +120,7 @@ proc trainMlp() =
       var y_preds: Tensor[float32]
       var ims: Tensor[float32]
       var score = 0.0
-      if batch_id mod 10 == 0:
+      if batch_id mod 2 == 0:
         # TODO: rework this maybe and make the `10` a command line option
         ctx.no_grad_mode:
           let y_pred = model.forward(X_test[0 ..< 1000, _]).value.softmax
