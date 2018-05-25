@@ -13,6 +13,11 @@ type
 
   DataParsingError* = object of Exception
 
+  Messages* {.pure.} = enum
+    Ping = "ping"
+    Train = "Start training!"
+    Connected = "connection successful!"
+
 proc parseDataPacket*(data: cstring): DataPacket =
   ## given a `DataPacket` received from the socket, parse the JSON
   ## and return the content as a `DataPacket` instance
@@ -54,6 +59,7 @@ func createDataPacket*(p_mnist, p_pred: Plot, erVal: (float, float)): string =
 proc preparePlotly*(): (Plot[float32], Plot[float32], Plot[float32]) =
   ## convenience proc which prepares Plotly, i.e. creates all `Plot` objects
   ## to be used on server and client side
+
   let
     mnist = Trace[float32](mode: PlotMode.LinesMarkers, `type`: PlotType.HeatMap)
     prediction = Trace[float32](mode: PlotMode.LinesMarkers, `type`: PlotType.HeatMap)
