@@ -73,6 +73,10 @@
 # in one line:
 #+LATEX_HEADER: \setbeamertemplate{items}[circle]
 
+# ##############################
+# change output of code blocks to use monokai
+# ##############################
+#+LaTeX_HEADER: \usemintedstyle{monokai}
 
 # ##############################
 # Apply different colors to the theme
@@ -102,27 +106,305 @@
 #+AUTHOR: Sebastian Schmidt
 #+DATE: 26$^{\text{th}}$ May 2018
 
-# #+LATEX_HEADER: \subtitle{Status of the InGrid}}
+# #+LATEX_HEADER: \subtitle{Status of the InGrid}
 #+LATEX_HEADER: \institute{University of Bonn}
 
+* CERN Axion Solar Telescope
+** CERN Axion Solar Telescope                                      :B_block:
+*** CAST
+# :PROPERTIES:
+# :BEAMER_COL: 0.55
+# :BEAMER_ENV: block
+# :END:
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 0.9\textwidth
+[[~/org/Talks/Jamboree_Feb2018/figs/CAST-Panorama.JPG]]
+#+END_CENTER
 
+*** the experiment
+# :PROPERTIES:
+# :BEAMER_COL: 0.48
+# :BEAMER_ENV: block
+# :END:
+- search for solar axions, hypothetical pseudoscalar particle solving
+  the strong $\mathcal{CP}$ problem
+- potential dark matter candidate
+- coupling to transverse $B$ fields, production in the Sun!
 
-* Neural networks - ...buzzword...
+** CERN Axion Solar Telescope                                      :B_block:
 
+*** CAST
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 0.9\textwidth
+[[~/org/Talks/Jamboree_Feb2018/figs/CAST-Panorama.JPG]]
+#+END_CENTER
 
-* Neural networks at the CAST experiment
-** Potential improvements via CNNs
+*** to take away...
+- exp. signal rates: $\le \num{0.1}$ $\gamma$ \si{\per\hour}
+- background rate: $\sim \SI{0.1}{\per \s}$
+- need very good background suppression
 
-*** baseline vs. CNNs: *$5\times$* background reduction (2014/15 data)
+* Neural network intro
 
+** Artificial Neural Networks (ANNs)
+*** ANN primer
+- type of multivariate analysis object providing highly non-linear, multidimensional
+  representations of input data
+- simplest type: feed-forward multilayer perceptron
+
+*** MLP example
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 0.65\textwidth
+[[~/Documents/Talks/figs/skizze_ann_clean.png]]
+#+END_CENTER
+
+** Artificial Neural Networks (ANNs)
+*** Producing an output and training
+Neuron output:
+\[
+y_k = \varphi \sum_{j = 0}^m w_{kj} x_j
+\]
+\( \varphi \): activation function, \( w_k \) weight vector\\
+
+Training minimizes error function
+\[
+  E(\mathbf{x_1}, \dots, \mathbf{x_N} | \mathbf{w}) = \sum_{a=1}^N \frac{1}{2}\left(y_{\text{ANN},a} - \hat{y}_a\right)^2
+\]
+using gradient descent
+\[
+  \mathbf{w}^{n+1} = \mathbf{w}^n - \eta \nabla_{w} E
+\]
+
+** Convolutional Neural Networks
+*** CNN schmatic
+convolutional and pooling layers alternating:
 #+BEGIN_CENTER
 #+ATTR_LATEX: :width 1\textwidth
-[[~/Documents/Talks/figs/background_rates_L_CNN_logy.pdf]]
+[[~/Documents/Talks/figs/mylenet.png]]
+#+END_CENTER
+where a convolutional layer is:
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 0.4\textwidth
+[[~/Documents/Talks/figs/conv_1D_nn.png]]
+#+END_CENTER
+
+** Convolution example in python
+*** Python calc of 2D convolution (instead of a gif...)
+
+#+BEGIN_SRC python :exports both :results output #+ATTR_LATEX: :options frame=single 
+import numpy as np
+from scipy.signal import convolve2d
+A = np.identity(6)
+B = np.array([[0,0,0],[0,5,0],[0,0,0]])
+C = convolve2d(A, B, 'same')
+print(C)
+#+END_SRC
+
+#+RESULTS:
+: [[5. 0. 0. 0. 0. 0.]
+:  [0. 5. 0. 0. 0. 0.]
+:  [0. 0. 5. 0. 0. 0.]
+:  [0. 0. 0. 5. 0. 0.]
+:  [0. 0. 0. 0. 5. 0.]
+:  [0. 0. 0. 0. 0. 5.]]
+
+** Convolution example in python
+*** Python calc of 2D convolution (instead of a gif...)
+
+#+BEGIN_SRC python :exports both :results output #+ATTR_LATEX: :options frame=single 
+import numpy as np
+from scipy.signal import convolve2d
+A = np.identity(6)
+B = np.array([[1,0,1],[0,1,0],[1,0,1]])
+C = convolve2d(A, B, 'same')
+print(C)
+#+END_SRC
+
+#+RESULTS:
+: [[2. 0. 1. 0. 0. 0.]
+:  [0. 3. 0. 1. 0. 0.]
+:  [1. 0. 3. 0. 1. 0.]
+:  [0. 1. 0. 3. 0. 1.]
+:  [0. 0. 1. 0. 3. 0.]
+:  [0. 0. 0. 1. 0. 2.]]
+
+** Convolution example in pictures
+
+*** A pictures is worth a thousand words?
+#+BEGIN_CENTER 
+#+ATTR_LATEX: :width 0.75\textwidth
+[[~/CastData/ExternCode/ANN-demo/media/songhoa/combined.png]]
+#+END_CENTER
+
+\tiny /source:/ [[http://www.songho.ca/dsp/convolution/convolution2d_example.html]]
+
+
+* Live demo of MLP training on MNIST
+** Live demo of MLP training on MNIST
+*** Simple demo of training simple ANN on MNIST
+- MNIST: a dataset of \num{70000} handwritten digits, size normalized
+  to $\num{28}\times\num{28}$ pixels, centered
+  - in the past used to benchmark image classification; nowadays fast
+    to achieve good accuracies $\geq\SI{90}{\percent}$
+- network layout:
+  - input neurons: $\num{28}\times\num{28}$ neurons (note: as
+    \num{1}D!)
+  - 1 hidden layer: \num{1000} neurons
+  - output layer: \num{10} neurons (\num{1} for each digit)
+  - activation function: rectified liner unit (=ReLU=):
+\[
+f(x) = \max(0, x)
+\]
+
+** Live demo of MLP training on MNIST
+*** What do I mean by live demo? 2 programs
+- Program 1: trains multilayer perceptron (MLP)
+  - written in Nim (=C= backend), using Arraymancer
+    - linear algebra + neural network library
+  - trains on \num{60000} digits, performs validation on \num{10000} digits
+- after every 10 batches (1 batch: 64 digits) send to program 2:
+  - random test digit
+  - predicted output 
+  - current error
+- Program 2 plots data live: written in Nim (=JS= backend), plots using =plotly.js=
+
+# link to the live demo. Make sure the server is currently running. If
+# it is, we can simply click the link and are sent to the browser
+#+BEGIN_CENTER
+*[[file:src/index_style.html][Start training!]]*
+#+END_CENTER
+
+* Neural networks at CAST
+
+** Back to CAST
+
+*** Requirements for detectors at CAST
+- CAST is a *very low* rate experiment!
+- detectors should reach: $f_{\text{Background}} \le \SI{e-6}{\per \keV \per \cm \squared
+  \per \s}$
+- signal / background ratio: $\frac{f_{\text{Background}}}{f_{\text{Signal}}} > \num{e5}$
+  - *need* very good signal / background classification!
+
+** Background example
+
+# Background event with much activity. Center chip:
+# - 2 (!) events (see 2 dips on FADC signal on the right)
+# - FADC shape much different
+# - 7 chips + FADC $\Rightarrow$ allows separation of e.g. blob in
+#   bottom right of center chip
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1\textwidth
+[[~/org/Talks/figs/viel_background_gnuplot_dwnsmpl.pdf]]
+#+END_CENTER
+
+** X-ray example
+
+# typical example of $\SI{5.9}{\kilo\electronvolt}$ ($\sim\num{220}$
+# hits) X-ray from $^{55}\text{Fe}$ source. FADC closes shutter, allows
+# individual photons to be detected from $\SI{20}{\mega\becquerel}$
+# source!
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1\textwidth
+[[~/org/Talks/figs/xray_calibration_gnuplot_dwnsampl_black.pdf]]
+#+END_CENTER
+
+** Back to CAST
+*** Requirements for detectors at CAST
+- \textcolor{gray}{CAST is a very low rate experiment!}
+- \textcolor{gray}{detectors should reach:} $f_{\text{Background}} \le \SI{e-6}{\per \keV \per \cm \squared
+  \per \s}$
+- \textcolor{gray}{signal / background ratio:} $\frac{f_{\text{Background}}}{f_{\text{Signal}}} > \num{e5}$
+  - \textcolor{gray}{need very good signal / background classification!}
+- events (as on previous slides) can be interpreted as images
+- Convolutional Neural Networks extremely good at image classification
+
+$\Rightarrow$ use Convolutional Neural Networks?
+
+** Old analysis - data and likelihood method
+
+*** 
+- visible from comparison of background to X-ray event that geometric
+  shapes are very different
+- utilize that to remove as much background as possible
+
+
+*** Likelihood analysis
+- energy range: \SIrange{0}{10}{\kilo \electronvolt}
+- split into 8 unequal bins of distinct event properties
+# explain that this smaller bins for lower energy. done by eye, based on different properties
+# of X-rays and cosmics for different energy ranges. might overlap one another by their
+# properties (beside the pixel count)
+# TODO: put table of energy ranges from thesis into backup slide
+# - only based on properties of X-rays
+# - set cut on Likelihood distribution, s.t. \SI{80}{\percent} of X-rays are recovered
+# - *now:* use artificial neural network to classify events as X-ray or background
+
+** Baseline analysis
+
+*** Analysis pipeline as follows
+$\Rightarrow$ raw events \\
+$\hphantom{\Rightarrow}$ filter 'clusters' \\
+$\hphantom{\Rightarrow}$ calc (geometric) properties\\
+$\hphantom{\Rightarrow}$ calc likelihood distribution from:\\
+\setlength{\leftmargini}{10pt}
+$\hphantom{\Rightarrow}$ \beamerbullet\- eccentricity\\
+$\hphantom{\Rightarrow}$ \beamerbullet\- length / transverse RMS\\
+$\hphantom{\Rightarrow}$ \beamerbullet\- fraction within transverse RMS
+
+*** Eccentricity
+:PROPERTIES:
+:BEAMER_COL: 0.35
+:BEAMER_ENV: block
+:END:
+#+BEGIN_CENTER 
+#+ATTR_LATEX: :width 1\textwidth
+[[~/org/Talks/figs/eccentricity_all_runs_chip_3_noff.pdf]]
+#+END_CENTER
+
+*** Length / $\text{RMS}_{\text{trans}}$
+:PROPERTIES:
+:BEAMER_COL: 0.35
+:BEAMER_ENV: block
+:END:
+#+BEGIN_CENTER 
+#+ATTR_LATEX: :width 1\textwidth
+[[~/org/Talks/figs/length_div_rmstrans_chip3_noff.pdf]]
+#+END_CENTER
+
+*** # pix in $\text{RMS}_{\text{trans}}$
+:PROPERTIES:
+:BEAMER_COL: 0.35
+:BEAMER_ENV: block
+:END:
+#+BEGIN_CENTER 
+#+ATTR_LATEX: :width 1\textwidth
+[[~/Documents/Talks/figs/fraction_trans_rms_all_runs_chip3.pdf]]
 #+END_CENTER
 
 
+** Current analysis - data and likelihood method
+*** Likelihood analysis & *CNN analysis*
+- energy range: \SIrange{0}{10}{\kilo \electronvolt}
+- split into 8 unequal bins of distinct event properties
+- only based on properties of X-rays
+- set cut on Likelihood distribution, s.t. \SI{80}{\percent} of X-rays are recovered
+- *now:* use artificial neural network to classify events as X-ray or background
+
+
+** ANNs applied to CAST
+*** Two ANN approaches
+1. calculate properties of event, use properties as input neurons
+2. use whole events (\(\num{256} \times \num{256}\) pixels) as input layer
+- reg. 1:
+  - small layout \( \Rightarrow \) fast to train
+  - potentially biased, not all information usable
+- reg. 2:
+  - huge layout \( \Rightarrow \) only trainable on GPU
+  - all information available
+
 ** CNN implementation details
 
+*** 8 networks in total, one for each $E$ bin
 - input size: $\num{256}\times\num{256}$ neurons
 - 3 convolutional and pooling layers alternating w/ 30, 70, 100
   kernels using $\num{15} \times \num{15}$ filters
@@ -136,8 +418,44 @@
 
 ** CNN example output distribution
 
-*** CNN output
+*** CNN output distribution: bad
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1\textwidth
+[[~/Documents/Talks/figs/CNN_classification_0_3.pdf]]
+#+END_CENTER
+
+** CNN example output distribution
+*** CNN output distribution: good
 #+BEGIN_CENTER
 #+ATTR_LATEX: :width 1\textwidth
 [[~/Documents/Talks/figs/CNN_classification_1_5.pdf]]
 #+END_CENTER
+
+
+** Potential improvements via CNNs
+
+*** Signal eff. vs background rej.
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1\textwidth
+[[~/Documents/Talks/figs/sig_vs_back_rej_cropped.pdf]]
+#+END_CENTER
+
+** Potential improvements via CNNs
+*** baseline vs. CNNs: *$5\times$* background reduction (2014/15 data)
+
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1\textwidth
+[[~/Documents/Talks/figs/background_rates_L_CNN_logy.pdf]]
+#+END_CENTER
+
+
+# a stray paranthesis :O (
+** "Summary"
+*** 
+- I hope I could teach you something new / it was still interesting
+  regardless :)
+- if you're interested: this talk and the code for the live demo can
+  be found on my GitHub:
+  [[https://github.com/vindaar/NeuralNetworkLiveDemo]]
+ 
+
