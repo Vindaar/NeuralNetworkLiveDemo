@@ -1,7 +1,5 @@
 * MNIST classification live demo
 
-[[file:media/demo.gif]]
-
 This repository contains a simple demo showcasing training of a simple
 MLP on the [[http://yann.lecun.com/exdb/mnist/][MNIST]] dataset.
 
@@ -14,6 +12,10 @@ The basic idea is the following:
   classifiy
 - use [[https://github.com/brentp/nim-plotly][plotly]] (Nim interface to [[https://plot.ly/javascript/][plotly.js]]) to plot sample as heatmap on
   the fly, including prediction of network of that sample
+
+** Simple gif of the live demo
+
+[[file:media/demo.gif]]
 
 ** Breakdown of repo / project
 - ann_talk.org
