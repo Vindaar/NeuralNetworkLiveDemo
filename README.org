@@ -18,8 +18,24 @@ The basic idea is the following:
 [[file:media/demo.gif]]
 
 ** Breakdown of repo / project
-- ann_talk.org
-  is the (probably rushed?! :/) talk I will be giving
+- [[ann_talk.org]] is the talk I will be giving
+  - =ann_talk.pdf= the corresponding PDF. It's created via org-beamer
+    export
+- [[src]]: contains the Nim code
+  - [[src/clientPlotly.nim]]:
+    The Nim program, which compiles to javascript and performs live
+    plotting of the data it's being sent
+  - [[src/index_style.html]]
+    The Html template, which runs the compiled =clientPlotly.js=
+  - [[src/server.nim]]
+    The Nim program, which compiles to C and trains the MLP and sends
+    the data to clientPlotly.js
+  - [[src/protocol.nim]] 
+    The (very simple) protocol used to transfer the data between the
+    two programs using =WebSocket=
+  - [[src/resources]]:
+    A folder containing a file, which contains data used to initialize
+    the plots.
 
 The demo consists of 2 different programs, a client and a server. The
 server performs the actual training using Arraymancer. The client is
