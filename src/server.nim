@@ -21,10 +21,12 @@ var
   imChannel: Channel[seq[float32]]
   yprChannel: Channel[seq[float32]]
   errChannel: Channel[(float, float)]
+  startChannel: Channel[bool]
 
 imChannel.open(0)
 yprChannel.open(0)
 errChannel.open(0)
+startChannel.open(1)
 
 template prepareDatasets() {.dirty.} =
   # Idem for testing data (10000 images)
@@ -85,6 +87,9 @@ proc trainMlp() =
 
   # call dirty template, which creates all MNIST related variables
   prepareMnist()
+
+  discard startChannel.recv()
+
   # counter variable as `fake epoch` for data to be transmitted
   var counter = 0
   # Learning loop
@@ -163,13 +168,29 @@ proc cb(req: Request) {.async.} =
     await req.respond(Http400, "Websocket negotiation failed: " & error)
     req.client.close()
     return
+  else:
+    # receive connection successful package
+    let (opcodeConnect, dataConnect) = await ws.readData()
+    if dataConnect != $Messages.Connected:
+      echo "Received wrong packet, quit early"
+      return
 
   echo "New websocket customer arrived!"
   var i = 0
 
+  # send command to ANN training to start w/ training
+  let (opcodeStart, dataStart) = await ws.readData()
+  if dataStart == $Messages.Train:
+    startChannel.send(true)
+  else:
+    # else return early
+    echo "data received is ", dataStart
+    return
+
   for epoch in 0 ..< 1000:
-    # first await the packet from the connected socket, don't start training before hand
+    # await a ping from the client to send new data
     let (opcode, data) = await ws.readData()
+    # first await the packet from the connected socket, don't start training before hand
     echo "(opcode: ", opcode, ", data length: ", data.len, ", data: ", data, ")"
     # now given prediction and accuracy data, send it to client
     try:
@@ -194,7 +215,6 @@ proc cb(req: Request) {.async.} =
 
         let dataPack = createDataPacket(p_mnist, p_pred, score_tup)
         waitFor ws.sendText(dataPack)
-        discard
       of Opcode.Close:
         asyncCheck ws.close()
         let (closeCode, reason) = extractCloseData(data)
