@@ -2,18 +2,18 @@
 
 [[file:media/demo.gif]]
 
-This repository contains (will contain) a simple demo showcasing
-training of a simple MLP on the MNIST (insert link) dataset.
+This repository contains a simple demo showcasing training of a simple
+MLP on the [[http://yann.lecun.com/exdb/mnist/][MNIST]] dataset.
 
-This demo is part of a talk given at the BCGS weekend seminar in Bad
-Honnef on <2018-05-26 Sa> (insert link).
+This demo is part of a talk given at the [[https://www.iap.uni-bonn.de/forms/weekend/program][BCGS weekend seminar]] in Bad
+Honnef on <2018-05-26 Sa>.
 
 The basic idea is the following:
-- train MLP using arraymancer (insert link)
+- train MLP using [[https://github.com/mratsim/Arraymancer][Arraymancer]]
 - after each epoch (or more or less often?) take (some?) random digit,
   classifiy
-- use plotly to plot sample as heatmap on the fly, including
-  prediction of network of that sample
+- use [[https://github.com/brentp/nim-plotly][plotly]] (Nim interface to [[https://plot.ly/javascript/][plotly.js]]) to plot sample as heatmap on
+  the fly, including prediction of network of that sample
 
 ** Breakdown of repo / project
 - ann_talk.org
