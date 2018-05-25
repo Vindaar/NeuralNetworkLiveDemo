@@ -7,7 +7,6 @@ import jsffi
 import dom
 import json
 import jswebsockets
-import random
 import protocol
 
 var
@@ -41,28 +40,34 @@ func jsObjectifyPlot(p: Plot): (JsObject, JsObject) =
   result[0] = parseJsonToJs("[" & join(jsons, ",") & "]")
   result[1] = parseJsonToJs(pretty(% p.layout))
 
-proc animateClient() =
-  ## create Plotly plots and update them as we reiceve more data
-  ## via a socket. Uses `setInterval` to loop
-
+proc initPlotly() =
+  ## creates the plotly plot firsts, statically
   # create the three `Plot` objects we use in the server and client
   let (p_mnist, p_pred, p_error) = preparePlotly()
-  # create all three plots in the browser
-  let
-    plots = [p_mnist, p_pred, p_error]
-    names = ["MNIST", "prediction", "error_rate"]
-    # get data for p_error separately
-    (pData, pLayout) = jsObjectifyPlot(p_error)
-  # NOTE: unfortunately we cannot use loopfusion here, due to
-  # https://github.com/nim-lang/Nim/issues/7794
-  for tup in zip(plots, names):
-    let
-      (p, name) = tup
-      (data, layout) = jsObjectifyPlot(p)
-    Plotly.newPlot(name, data, layout)
+  # load the init data from file and parse it
+  const data = staticRead("resources/init_data.txt")
+  let (mnData, mnLayout, prData, prLayout, erValX, erValY) = parseNewData(data)
+
+  Plotly.newPlot("MNIST", mnData, mnLayout)
+  Plotly.newPlot("prediction", prData, prLayout)
+  let (erData, erLayout) = jsObjectifyPlot(p_error)
+  Plotly.newPlot("error_rate", erData, erLayout)
+
+
+proc animateClient() {.exportc.} =
+  ## create Plotly plots and update them as we reiceve more data
+  ## via a socket. Uses `setInterval` to loop
+  ## This proc is run once the user clicks on the "Start training!" button
+
+  # send command to server to start the training
+  socket.send($Messages.Train)
+  socket.onMessage = proc (e: MessageEvent) =
+    discard
+
+  let (p_mnist, p_pred, p_error) = preparePlotly()
 
   proc doAgain() =
-    socket.send("ping")
+    socket.send($Messages.Ping)
     socket.onMessage = proc (e: MessageEvent) =
       #echo("received: ", e.data)
       # parse the data packet to get new data and layout
@@ -82,11 +87,15 @@ proc main() =
   ## main proc of the client (animated plotting using plotly.js). Open a WebSocket,
   ## create plotly `Plot`'s and then wait for data from the socket and update
   ## w/ Plotly.react
-  socket.onOpen = proc (e:Event) =
-    socket.send("ping")
+  socket.onOpen = proc (e: Event) =
+    socket.send($Messages.Connected)
 
-  # now animate the plots
-  animateClient()
+  # initialize Plotly (creates static plots)
+  initPlotly()
+
+  # animation of the plots is done via the animateClient proc, which is called, once
+  # the "Start training!" button is clicked
+  # animateClient()
 
   # when done, close...
   socket.onClose = proc (e:CloseEvent) =

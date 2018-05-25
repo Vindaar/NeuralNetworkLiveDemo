@@ -73,9 +73,6 @@ proc preparePlotly*(): (Plot[float32], Plot[float32], Plot[float32]) =
   prediction.zs = mapIt(toSeq(0 .. 10), @[random(1.0).float32])
 
   error.marker = Marker[float32](size: @[10.0.float32], color: @[Color(r: 0.9, g: 0.4, b: 0.0, a: 1.0)])
-  # TODO: replace data...
-  error.xs = @[] #1'f32, 2, 3, 4, 5]
-  error.ys = @[] #1'f32, 2, 1, 9, 5]
 
   let
     layout_mnist = Layout(title: &"MNIST example: label {0}", width: 800, height: 800,
