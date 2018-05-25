@@ -27,15 +27,15 @@ only used to plot the data. It uses nim-plotly (based on plotly.js)
 for that.
 
 *** Client
-Since nim-plotly by default uses the =C= backend by default, some work
-had to be done to be able to produce live updating plots. Using a
-static template.html does not easily allow to call =Plotly.react= to
-replace the content of the plot. Therefore, we use an experimental JS
-backend for nim-plotly and call =newPlot= as well as =react= from
-that. But because we cannot train the MLP using the JS backend, we
-need to split the two into individual programs.
-The communication between the two happens using WebSockets, with the
-data being sent as stringified JSON.
+Since nim-plotly by default uses the =C= backend, some work had to be
+done to be able to produce live updating plots. Using a static
+template.html does not easily allow to call =Plotly.react= to replace
+the content of the plot. Therefore, we use an experimental JS backend
+for nim-plotly and call =newPlot= as well as =react= from that. But
+because we cannot train the MLP using the JS backend, we need to split
+the two into individual programs.  The communication between the two
+happens using WebSockets, with the data being sent as stringified
+JSON.
 
 Note that this depends on the =nim-plotly/exp_js_backend= branch here:
 [[https://github.com/vindaar/nim-plotly/tree/exp_js_backend]].
