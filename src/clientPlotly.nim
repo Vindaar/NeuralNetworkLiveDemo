@@ -12,6 +12,8 @@ import protocol
 var
   socket = newWebSocket("ws://localhost:8080")
 
+
+const WIDTH = 800
 # global `Plotly` object
 let plt = newPlotly()
 
@@ -37,16 +39,13 @@ proc parseNewData(data: cstring): (JsObject, JsObject, JsObject, JsObject, float
 func jsObjectifyPlot(p: Plot): (JsObject, JsObject) =
   ## given a `Plot` object convert it to two valid `JsObject` to
   ## send to Plotly
-  let
-    # call `json` for each element of `Plot.datas`
-    jsons = mapIt(p.datas, it.json(as_pretty = false))
-  result[0] = parseJsonToJs("[" & join(jsons, ",") & "]")
-  result[1] = parseJsonToJs(pretty(% p.layout))
+  result[0] = parseJsonToJs(parseTraces(p.traces))
+  result[1] = parseJsonToJs($(% p.layout))
 
 proc initPlotly() =
   ## creates the plotly plot firsts, statically
   # create the three `Plot` objects we use in the server and client
-  let (p_mnist, p_pred, p_error) = preparePlotly()
+  let (p_mnist, p_pred, p_error) = preparePlotly(WIDTH)
   # load the init data from file and parse it
   const data = staticRead("resources/init_data.txt")
   let (mnData, mnLayout, prData, prLayout, erValX, erValY) = parseNewData(data)
@@ -67,7 +66,7 @@ proc animateClient() {.exportc.} =
   socket.onMessage = proc (e: MessageEvent) =
     discard
 
-  let (p_mnist, p_pred, p_error) = preparePlotly()
+  let (p_mnist, p_pred, p_error) = preparePlotly(WIDTH)
 
   proc doAgain() =
     socket.send($Messages.Ping)
@@ -79,8 +78,8 @@ proc animateClient() {.exportc.} =
       plt.react("MNIST", mnData, mnLayout)
       plt.react("prediction", prData, prLayout)
       # update p_error
-      p_error.datas[0].xs.add erValX
-      p_error.datas[0].ys.add erValY
+      p_error.traces[0].xs.add erValX
+      p_error.traces[0].ys.add erValY
       let (errData, errLayout) = jsObjectifyPlot(p_error)
       plt.react("error_rate", errData, errLayout)
 

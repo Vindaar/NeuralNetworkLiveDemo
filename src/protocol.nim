@@ -49,14 +49,14 @@ func createDataPacket*(p_mnist, p_pred: Plot, erVal: (float, float)): string =
     plots = [p_mnist, p_pred]
   for tup in zip(plots, prefixes):
     let (p, prefix) = tup
-    dataTab[&"{prefix}Trace"] = % p.datas[0]
+    dataTab[&"{prefix}Trace"] = % p.traces[0]
     dataTab[&"{prefix}Layout"] = % p.layout
   dataTab["erValX"] = % erVal[0]
   dataTab["erValY"] = % erVal[1]
   let jsonObj = JsonNode(kind: JObject, fields: dataTab)
   result.toUgly(jsonObj)
 
-proc preparePlotly*(): (Plot[float32], Plot[float32], Plot[float32]) =
+proc preparePlotly*(width: int): (Plot[float32], Plot[float32], Plot[float32]) =
   ## convenience proc which prepares Plotly, i.e. creates all `Plot` objects
   ## to be used on server and client side
 
@@ -74,17 +74,19 @@ proc preparePlotly*(): (Plot[float32], Plot[float32], Plot[float32]) =
 
   error.marker = Marker[float32](size: @[10.0.float32], color: @[Color(r: 0.9, g: 0.4, b: 0.0, a: 1.0)])
 
+  # NOTE: for certain sizes too small, the pred width will be screwed up
+  let pred_width = int(width / 4)
   let
-    layout_mnist = Layout(title: &"MNIST example: label {0}", width: 800, height: 800,
+    layout_mnist = Layout(title: &"MNIST example: label {0}", width: width, height: width,
                           xaxis: Axis(title: "my x-axis"),
                           yaxis: Axis(title: "y-axis too"), autosize: false)
-    layout_pred = Layout(title: &"label {0}", width: 200, height: 800,
+    layout_pred = Layout(title: &"label {0}", width: pred_width, height: width,
                          xaxis: Axis(title: ""),
                          yaxis: Axis(title: "prob digit"), autosize: false)
-    layout_error = Layout(title: &"Traning accuracy", width: 800, height: 800,
+    layout_error = Layout(title: &"Traning accuracy", width: width, height: width,
                          xaxis: Axis(title: "Training epoch"),
                          yaxis: Axis(title: "Accuracy"), autosize: false)
-    p_mnist = Plot[float32](layout: layout_mnist, datas: @[mnist])
-    p_pred  = Plot[float32](layout: layout_pred, datas: @[prediction])
-    p_error = Plot[float32](layout: layout_error, datas: @[error])
+    p_mnist = Plot[float32](layout: layout_mnist, traces: @[mnist])
+    p_pred  = Plot[float32](layout: layout_pred, traces: @[prediction])
+    p_error = Plot[float32](layout: layout_error, traces: @[error])
   result = (p_mnist, p_pred, p_error)

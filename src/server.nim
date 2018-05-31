@@ -9,6 +9,7 @@ import json
 import random
 import macros
 import threadpool
+import os
 
 # import from this project
 import protocol
@@ -159,7 +160,10 @@ proc cb(req: Request) {.async.} =
   # call dirty template, which creates all MNIST related variables
   prepareDatasets()
   # get the plotly `Plot` objects
-  let (p_mnist, p_pred, p_error) = preparePlotly()
+  var width = 800
+  if paramCount() > 1:
+    width = paramStr(1).parseInt
+  let (p_mnist, p_pred, p_error) = preparePlotly(width)
 
   let (ws, error) = await verifyWebsocketRequest(req)
 
@@ -206,11 +210,11 @@ proc cb(req: Request) {.async.} =
           im2d = im.reshape2D([28, 28]).reversed
 
         # replace the data on the `Plot`
-        p_mnist.datas[0].zs = im2d
+        p_mnist.traces[0].zs = im2d
         # modify title and set new layout
         p_mnist.layout.title = pretitle & title & $y_test[epoch]
         # set new prediction data and title
-        p_pred.datas[0].zs = y_pred.reshape2D([10, 1])
+        p_pred.traces[0].zs = y_pred.reshape2D([10, 1])
         p_pred.layout.title = title & $y_test[epoch]
 
         let dataPack = createDataPacket(p_mnist, p_pred, score_tup)
@@ -219,6 +223,7 @@ proc cb(req: Request) {.async.} =
         asyncCheck ws.close()
         let (closeCode, reason) = extractCloseData(data)
         echo "socket went away, close code: ", closeCode, ", reason: ", reason
+        break
       else: discard
     except:
       echo "encountered exception: ", getCurrentExceptionMsg()
