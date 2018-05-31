@@ -233,7 +233,7 @@ print(C)
 *** A pictures is worth a thousand words?
 #+BEGIN_CENTER 
 #+ATTR_LATEX: :width 0.75\textwidth
-[[~/CastData/ExternCode/ANN-demo/media/songhoa/combined.png]]
+[[~/CastData/ExternCode/NeuralNetworkLiveDemo/media/songhoa/combined.png]]
 #+END_CENTER
 
 \tiny /source:/ [[http://www.songho.ca/dsp/convolution/convolution2d_example.html]]
@@ -394,7 +394,8 @@ $\hphantom{\Rightarrow}$ \beamerbullet\- fraction within transverse RMS
 ** ANNs applied to CAST
 *** Two ANN approaches
 1. calculate properties of event, use properties as input neurons
-2. use whole events (\(\num{256} \times \num{256}\) pixels) as input layer
+2. use whole events (\(\num{256} \times \num{256}\) pixels) as input
+   layer
 - reg. 1:
   - small layout \( \Rightarrow \) fast to train
   - potentially biased, not all information usable
